@@ -1,0 +1,25 @@
+{
+    "name": "devrahul/signinupapi",
+    "description": "This will let you use sign in up api",
+    "type": "laravel",
+    "require-dev": {
+        "laravel/passport": "^9.0@dev",
+        "aloha/twilio": "dev-master",
+        "ultraware/roles": "dev-master",
+        "lcobucci/jwt": "^4.0@alpha"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rahul Kewat",
+            "email": "rk.rahulkewat@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload":{
+        "psr-4": {
+            "Devrahul\\Signinupapi\\":"src/"
+        }
+    }
+}
