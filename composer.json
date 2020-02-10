@@ -16,7 +16,12 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "laravel/passport": "7.5.1",
+        "aloha/twilio": "dev-master",
+        "ultraware/roles": "dev-master",
+        "lcobucci/jwt": "^4.0@alpha"
+    },
     "autoload":{
         "psr-4": {
             "Devrahul\\Signinupapi\\":"src/"

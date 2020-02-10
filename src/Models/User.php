@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Hash;
 
 
 
-class User extends Authenticatable  implements HasRoleAndPermissionContract{
+class User extends Authenticatable{
 
     /**
      * @var string
