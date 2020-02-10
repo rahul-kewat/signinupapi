@@ -21,6 +21,13 @@
         "psr-4": {
             "Devrahul\\Signinupapi\\":"src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Devrahul\\Signinupapi\\SigninupapiServiceProvider"
+            ]
+        }
     }
     
 }
