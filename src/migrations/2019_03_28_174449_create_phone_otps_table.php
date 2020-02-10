@@ -18,6 +18,7 @@ class CreatePhoneOtpsTable extends Migration
             $table->string('phone_no');
             $table->string('otp');
             $table->timestamps();
+            $table->boolean('is_verified')->default(0);
         });
     }
 

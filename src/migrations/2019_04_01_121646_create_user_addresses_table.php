@@ -18,14 +18,23 @@ class CreateUserAddressesTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('latitude');
-            $table->string('longitude');
-            $table->string('country');
-            $table->string('city');
-            $table->string('pincode');
+            $table->float('latitude', 10, 6);
+            $table->float('longitude', 10, 6);
+   
+         
+    
             $table->string('address_type')->nullable();
-            $table->string('full_address');
+          
+            $table->string('name')->nullable()->after('place_id');
+            $table->string('phone')->nullable()->after('name');
+            $table->string('country')->nullable();
+            $table->string('city')->nullable();
+            $table->string('pincode')->nullable();
+            $table->string('full_address')->nullable();
+            $table->string('house_no')->after('city')->nullable();
+            $table->string('landmark', 255)->after('house_no')->nullable();
             $table->timestamps();
+           
         });
     }
 

@@ -25,6 +25,7 @@ class CreateUserActivationsTable extends Migration
             $table->integer('id_user');
             $table->string('token', 32);
             $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->string('email', 50)->after('token');
         });
     }
 

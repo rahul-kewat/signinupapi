@@ -25,6 +25,13 @@ class CreateUsersTable extends Migration {
             $table->float('credit')->default(0);
             $table->enum('online', ['0', '1'])->default('0');
             $table->enum('status', ['0', '1'])->default('1');
+            $table->string('phone_number')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('password_otp')->nullable();
+            $table->string('refferal_code')->nullable();
+            $table->string('blood_group')->nullable();
+            $table->string('phone_country_code', 10)->after('id');
+            $table->integer('selected_address')->after('phone_number')->nullable()->default(0);
             $table->timestamps();
         });
     }
