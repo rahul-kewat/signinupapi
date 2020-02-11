@@ -13,6 +13,9 @@ use Devrahul\Signinupapi\Models\VenderService;
 use App\Mail\Activate;
 use App\Mail\ForgetPassword;
 use App\Mail\UpdateEmail;
+
+
+
 use Illuminate\Support\Facades\Auth;
 use Devrahul\Signinupapi\Models\User_activation as Activation;
 use Lcobucci\JWT\Parser;
@@ -48,11 +51,13 @@ use Devrahul\Signinupapi\Requests\ProfileRequest;
 use Hash;
 use App;
 
+
 use Devrahul\Signinupapi\Traits\ApiUserTrait;
 
 class UsersController extends Controller {
 
     use ApiUserTrait;
+
 
     protected $response = [
         'status' => 0,
@@ -113,10 +118,12 @@ class UsersController extends Controller {
         try{
             //Twilio Integration and OTP Flow starts here
             $otp = rand(1000, 9999);
-            $phone = $request['phone_country_code'] . $request['phone_number'];
+
+            // always add + in front of phone no
+            $phone = "+". $request['phone_country_code'] . $request['phone_number'];
          
             $twilio = new Aloha\Twilio\Twilio(env('TWILIO_SID'), env('TWILIO_TOKEN'), env('TWILIO_SMS_FROM_NUMBER'));
-            
+        
             if ($twilio->message($phone, 'Otp is ' . $otp)) {
                 $user_otp = phoneOtp::where('phone_no', $request['phone_number'])->first();
                 
@@ -547,7 +554,8 @@ class UsersController extends Controller {
             $user = User::where('phone_number', $request['phone_no'])->first();
             $user['password_otp'] = rand(1000, 9999);
             $user->update(['password_otp' => $user['password_otp']]);
-            $phone_no = $user->phone_country_code.$request['phone_no'];
+            // add + in front of phone no
+            $phone_no = "+". $user->phone_country_code.$request['phone_no'];
             
             $twilio = new Aloha\Twilio\Twilio(env('TWILIO_SID'), env('TWILIO_TOKEN'), env('TWILIO_SMS_FROM_NUMBER'));
             if ($user['password_otp']) {
