@@ -29,6 +29,7 @@ Route::group(['middleware' => ['api']], function() {
         Route::post('checkotp', 'API\v1\UsersController@checkOtp'); //working
         Route::post('sendotp', 'API\v1\UsersController@sendOtp'); 
         Route::put('updateforgetpassword', 'API\v1\UsersController@updateForgetPassword');//tested
+        Route::post('sociallogin', 'API\v1\UsersController@socialLogin');
         
     });
    
