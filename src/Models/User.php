@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable implements HasRoleAndPermissionContract{
 
+    
     /**
      * @var string
      * @SWG\Property(
@@ -232,7 +233,7 @@ class User extends Authenticatable implements HasRoleAndPermissionContract{
 
     public function roles()
     {
-        return $this->belongsToMany('App\Models\Role');
+        return $this->belongsToMany('App\Role');
     }
     
     /**
