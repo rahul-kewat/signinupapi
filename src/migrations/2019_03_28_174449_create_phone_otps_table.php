@@ -16,6 +16,7 @@ class CreatePhoneOtpsTable extends Migration
         Schema::create('phone_otps', function (Blueprint $table) {
             $table->increments('id');
             $table->string('phone_no');
+            $table->string('phone_country_code');
             $table->string('otp');
             $table->timestamps();
             $table->boolean('is_verified')->default(0);
