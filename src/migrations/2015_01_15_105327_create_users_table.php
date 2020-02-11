@@ -33,6 +33,7 @@ class CreateUsersTable extends Migration {
             $table->string('blood_group')->nullable();
             $table->string('phone_country_code', 10);
             $table->integer('selected_address')->nullable()->default(0);
+            $table->text('social_image')->nullable();
             $table->timestamps();
         });
     }
