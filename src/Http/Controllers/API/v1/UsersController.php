@@ -596,7 +596,6 @@ class UsersController extends Controller {
      */
 
     public function checkOtp(CheckPasswordOtp $request) {
-        dd("dfd");
         try {
             
             $user = User::where('password_otp', $request['otp'])->where('id', $request['id'])->first();
