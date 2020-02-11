@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Hash;
  * @SWG\Definition(type="object", @SWG\Xml(name="User"))
  */
 
-
-
-class User extends Authenticatable{
+class User extends Authenticatable implements HasRoleAndPermissionContract{
 
     /**
      * @var string
@@ -74,11 +72,8 @@ class User extends Authenticatable{
      * )
      */
 
-    use HasApiTokens, Notifiable ;
-    // use HasRoleAndPermission;
+    use HasApiTokens, Notifiable , HasRoleAndPermission;
 
-
-    
     /**
      * The attributes that are mass assignable.
      *
@@ -264,7 +259,7 @@ class User extends Authenticatable{
      /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-//   public function role() {
-//        return $this->belongsToMany('App\Role')->withTimestamps();
-//    }
+  public function role() {
+       return $this->belongsToMany('App\Role')->withTimestamps();
+   }
 }

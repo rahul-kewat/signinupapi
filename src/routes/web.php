@@ -23,8 +23,8 @@ Route::group(['namespace' => 'Devrahul\Signinupapi\Http\Controllers'],function()
 Route::group(['middleware' => ['api']], function() {
     //Api v1 version routes define inside it so we can able to manage the version
     Route::prefix('v1')->group(function () {
-        Route::post('user','API\v1\UsersController@register'); //working
-        Route::post('login', 'API\v1\UsersController@login'); // tested  but dd used __ still token problem 
+        Route::post('user','API\v1\UsersController@register'); //done
+        Route::post('login', 'API\v1\UsersController@login'); // done
         Route::post('forgetpassword', 'API\v1\UsersController@forgetPassword'); // twilio problem
         Route::post('checkotp', 'API\v1\UsersController@checkOtp'); //working
         Route::post('sendotp', 'API\v1\UsersController@sendOtp'); 

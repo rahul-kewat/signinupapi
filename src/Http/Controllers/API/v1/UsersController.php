@@ -2,6 +2,7 @@
 
 namespace Devrahul\Signinupapi\Http\Controllers\API\v1;
 
+
 use Symfony\Component\HttpFoundation\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -17,7 +18,7 @@ use Devrahul\Signinupapi\Models\User_activation as Activation;
 use Lcobucci\JWT\Parser;
 use Devrahul\Signinupapi\Models\DeviceDetails;
 use Devrahul\Signinupapi\Models\Role;
-use App\Http\Resources\User as UserResource;
+use Devrahul\Signinupapi\Resources\User as UserResource;
 use App\Http\Resources\RolesResourceCollection;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -51,7 +52,7 @@ use Devrahul\Signinupapi\Traits\ApiUserTrait;
 
 class UsersController extends Controller {
 
-    
+    use ApiUserTrait;
 
     protected $response = [
         'status' => 0,
@@ -244,8 +245,10 @@ class UsersController extends Controller {
 
             $request['status'] = User::active;
             $user = User::create($request->all());       
-            $user->attachRole(1);
+            // $user->accessRole(1);
+            
             $token = $user->createToken('Api access token')->accessToken;
+           
             $this->insertDeviceDetails($token, $user->id);
                         
             return (new UserResource($user, $token))->additional([
@@ -340,7 +343,8 @@ class UsersController extends Controller {
                 //Password matched successfully
                 
                 
-                $token = $user->createToken('Api access token')->accessToken;
+                $token = Auth::user()->createToken('Api access token')->accessToken;
+               
                 $this->insertDeviceDetails($token, $user->id);
                 
                 if ($user->status == User::inActive) {
@@ -365,7 +369,8 @@ class UsersController extends Controller {
             }
         } catch (\Exception $ex) {
             
-            $this->response['message'] = trans('api/user.something_wrong');
+            // $this->response['message'] = trans('api/user.something_wrong');
+            dd( $ex->getMessage());
             return response($this->response, 500);
         }
     }
@@ -591,11 +596,11 @@ class UsersController extends Controller {
      */
 
     public function checkOtp(CheckPasswordOtp $request) {
-        
+        dd("dfd");
         try {
             
             $user = User::where('password_otp', $request['otp'])->where('id', $request['id'])->first();
-
+            
             if (!$user) {
                 $this->response['message'] = trans('api/user.invalid_otp');
                 return response($this->response, 422);

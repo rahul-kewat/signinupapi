@@ -25,14 +25,14 @@ class CreateUserAddressesTable extends Migration
     
             $table->string('address_type')->nullable();
           
-            $table->string('name')->nullable()->after('place_id');
-            $table->string('phone')->nullable()->after('name');
+            $table->string('name')->nullable();
+            $table->string('phone')->nullable();
             $table->string('country')->nullable();
             $table->string('city')->nullable();
             $table->string('pincode')->nullable();
             $table->string('full_address')->nullable();
-            $table->string('house_no')->after('city')->nullable();
-            $table->string('landmark', 255)->after('house_no')->nullable();
+            $table->string('house_no')->nullable();
+            $table->string('landmark', 255)->nullable();
             $table->timestamps();
            
         });
