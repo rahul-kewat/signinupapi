@@ -1,6 +1,6 @@
 <?php
 
-namespace Devrahul\Signinupapi\Http\Controllers\API\v1;
+namespace App\Http\Controllers\API\v1;
 
 
 use Symfony\Component\HttpFoundation\Request;
