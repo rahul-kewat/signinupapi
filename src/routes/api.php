@@ -1,13 +1,5 @@
 <?php
-use Illuminate\Http\Request;
 
-
-
-Route::group(['namespace' => 'Devrahul\Signinupapi\Http\Controllers'],function(){
-
-   
-
-    
 
     /*
 |--------------------------------------------------------------------------
@@ -20,43 +12,32 @@ Route::group(['namespace' => 'Devrahul\Signinupapi\Http\Controllers'],function()
 |
 */
 
-Route::group(['middleware' => ['api']], function() {
-    //Api v1 version routes define inside it so we can able to manage the version
-    Route::prefix('v1')->group(function () {
-        Route::post('user','API\v1\UsersController@register'); //done
-        Route::post('login', 'API\v1\UsersController@login'); // done
-        Route::post('forgetpassword', 'API\v1\UsersController@forgetPassword'); // twilio problem
-        Route::post('checkotp', 'API\v1\UsersController@checkOtp'); //working
-        Route::post('sendotp', 'API\v1\UsersController@sendOtp'); 
-        Route::put('updateforgetpassword', 'API\v1\UsersController@updateForgetPassword');//tested
-        Route::post('sociallogin', 'API\v1\UsersController@socialLogin');
-        
-    });
-   
-});
+use Illuminate\Http\Request;
 
+Route::prefix('v1')->group(function () {
+    Route::post('user','API\v1\UsersController@register'); 
+    Route::post('login', 'API\v1\UsersController@login'); 
+    Route::post('sociallogin', 'API\v1\UsersController@socialLogin');
+    Route::post('checkotp', 'API\v1\UsersController@checkOtp');
+    Route::post('sendotp', 'API\v1\UsersController@sendOtp'); 
+    Route::post('checkPhoneOtp', 'API\v1\UsersController@checkPhoneOtp');
+});
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['middleware' => ['api']], function() {
-    //Api v1 version routes define inside it so we can able to manage the version.
+Route::group(['middleware' => ['auth:api','locale']], function() {
     Route::prefix('v1')->group(function () {
-
-
-       
-
+        Route::post('forgetpassword', 'API\v1\UsersController@forgetPassword');     
+        Route::put('updateforgetpassword', 'API\v1\UsersController@updateForgetPassword');
         Route::put('updatepassword', 'API\v1\UsersController@updatePassword');
         Route::get('logout', 'API\v1\UsersController@logout');
         Route::put('user', 'API\v1\UsersController@editUser');
         Route::get('user', 'API\v1\UsersController@getUsers');
-        Route::post('addReview', 'API\v1\BookingController@addReview');
-        Route::post('checkPhoneOtp', 'API\v1\UsersController@checkPhoneOtp');
-        Route::post('uploadImage', 'API\v1\UsersController@uploadImage');
-        
+        Route::post('uploadImage', 'API\v1\UsersController@uploadImage');    
     });
-        
+   
 });
 
-});
+
