@@ -24,17 +24,17 @@ class User extends Resource {
     }
 
     public function toArray($request) {
-
         return [
             'id' => $this->id,
             'firstname' => $this->firstname ? $this->firstname : '',
+            'lastname' => $this->lastname ? $this->lastname : '',
             'email' => $this->email ? $this->email : '',
             'phone_number' => $this->phone_number ? $this->phone_number : '',
             'image' => $this->image ? $this->image : '',
             'phone_country_code' => $this->phone_country_code ? $this->phone_country_code : '',
-            'blood_group' => $this->blood_group ? $this->blood_group : '',
             'gender' => $this->gender ? $this->gender : '',
             'token' => $this->token,
+            'refferal_code' => $this->refferal_code,
             'is_notification' => $this->is_notification
         ];
 

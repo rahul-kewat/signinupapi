@@ -21,7 +21,6 @@ class UserProfile extends JsonResource
             'phone_number' => $this->phone_number,
             'phone_country_code' => $this->phone_country_code ? $this->phone_country_code : '',
             'gender' => $this->gender ? $this->gender : '' ,
-            'blood_group' => $this->blood_group ? $this->blood_group : '',
             'is_notification' => $this->is_notification,
             'image' => $this->image ? $this->image : '',
 
