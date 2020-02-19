@@ -26,13 +26,15 @@ class RegisterUser extends FormRequest
     public function rules()
     {
         return [
-            'firstname' => 'required|string|max:45',
+            'firstname' => 'required|string|regex:/^[a-zA-Z]+$/u|max:45',
+            'lastname' => 'required|string||regex:/^[a-zA-Z]+$/u|max:45',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|confirmed|min:6',
-            'password_confirmation' => 'required|min:6',
+            'password' => 'required|min:6',
             'phone_country_code' => 'required',
-            'phone_number' => ['required','string','unique:users','exists:phone_otps,phone_no'],
-            'otp' => 'required|string|exists:phone_otps,otp'
+            'refferal_code' => 'string|max:6|nullable|exists:refferal',
+            'phone_number' => ['required','integer','digits:10','unique:users','exists:phone_otps,phone_no'],
+            'phone_country_code' => 'required',
+            'otp' => 'required|integer|exists:phone_otps,otp'
         ];
     }
 
