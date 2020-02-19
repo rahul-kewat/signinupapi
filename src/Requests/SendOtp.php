@@ -25,13 +25,13 @@ class SendOtp extends FormRequest
      */
     public function rules()
     {
-        $phoneNoRules = $this->has('email') ? ['required','string','unique:users,phone_number',new StringLenth] : $this->has('update_profile') ?  ['required','string','unique:users,phone_number',new StringLenth] : ['required','string',new StringLenth];
+        $phoneNoRules = $this->has('email') ? ['required','integer','digits:10','unique:users,phone_number'] : $this->has('update_profile') ?  ['required','integer','digits:10','unique:users,phone_number'] : ['required','integer','digits:10'];
         
 
         return [
             'phone_number' => $phoneNoRules,
-            'phone_country_code' => 'required',
-            'email' => 'sometimes|required|email|unique:users,email'
+            'phone_country_code' => 'required|integer',
+            'email' => 'sometimes|email|unique:users,email'
         ]; 
     }
 

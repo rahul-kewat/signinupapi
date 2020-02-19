@@ -4,6 +4,8 @@ namespace Devrahul\Signinupapi\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
+use App\Rules\ValidateOtpAttemptsRule;
+
 
 class CheckOtpPhone extends FormRequest
 {
@@ -25,8 +27,8 @@ class CheckOtpPhone extends FormRequest
     public function rules()
     {
         return [
-            'id' => 'required|numeric|exists:phone_otps,id',
-            'otp' => 'required|string|exists:phone_otps,otp'
+            'id' => ['required','exists:phone_otps,id', new ValidateOtpAttemptsRule],
+            'otp' => 'required|string'
         ];
     }
 

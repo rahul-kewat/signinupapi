@@ -1,12 +1,11 @@
 <?php
 
-namespace Devrahul\Signinupapi\Requests;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
-use App\Rules\OtpUpdateForgetPasswordAndNoOfAttemptsRule;
 
-class UpdateForgetPass extends FormRequest
+class TermsandCondition extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,10 +25,20 @@ class UpdateForgetPass extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => ['bail','required','exists:users,id', new OtpUpdateForgetPasswordAndNoOfAttemptsRule],
-            'otp' => 'required|exists:users,password_otp',
-            'password' => 'required|min:6'
+            'language' => 'required|string'
         ];
+    }
+
+    /**
+    * Add parameters to be validated
+    *
+    * @return array
+    */
+    public function all($keys = null)
+    {
+        $data = parent::all($keys);
+        $data['language'] = $this->header('language');
+        return $data;
     }
 
     /**
@@ -46,4 +55,5 @@ class UpdateForgetPass extends FormRequest
 
         throw new \Illuminate\Validation\ValidationException($validator, $response);
     }
+
 }
