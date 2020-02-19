@@ -69,6 +69,7 @@ class UsersController extends Controller {
     public function __construct() {
         $this->response['data'] = new \stdClass();
     }
+    
 
     protected function setData($complexObject)
     {
@@ -127,6 +128,10 @@ class UsersController extends Controller {
             //checking whether the phone no doesn't contain the string
             if(!is_numeric($request['phone_number'])) {
                 return response()->json([
+<<<<<<< HEAD
+=======
+                    'status' => 0,
+>>>>>>> 190b5620f93afd3479d72b540e33c08ec97b0810
                     'message' => "Please enter a valid phone no"
                 ]);
               }
@@ -373,6 +378,7 @@ class UsersController extends Controller {
     public function login(Login $request) {
         
         try {
+<<<<<<< HEAD
             // if email is not set then it will go inside the if case
             if(!isset($request['email']))
             {
@@ -395,6 +401,26 @@ class UsersController extends Controller {
                     }
             }
             
+=======
+                      
+            //checking whether the phone no doesn't contain the string
+            if(!is_numeric($request['phone_number'])) {
+                return response()->json([
+                    'status' => 0,
+                    'message' => "Please enter a valid phone no"
+                ]);
+              }
+
+              // validating both phone country code and phone no
+              $validPhone_ccode=User::whereRaw('phone_number = ? and phone_country_code = ?',[ $request['phone_number'], $request['phone_country_code']])->first();
+              if(!$validPhone_ccode)
+              {
+                  return response()->json([
+                          'status' => 0,
+                          'message' => "Please provide valid Combination of Phone No and Country Code"
+                  ],422);
+              }
+>>>>>>> 190b5620f93afd3479d72b540e33c08ec97b0810
 
             
             $isValidatePhone = User::where('phone_number',$request['email'])->first(); 
@@ -626,10 +652,13 @@ class UsersController extends Controller {
               }
            
             $user = User::where('phone_number', $request['phone_no'])->where('phone_country_code', $request['phone_country_code'])->first();
+<<<<<<< HEAD
             if(!isset($user))
             {
                 return $this->response['message'] = "No such combination of phone no and phone country code";
             }
+=======
+>>>>>>> 190b5620f93afd3479d72b540e33c08ec97b0810
             $user['password_otp'] = rand(1000, 9999);
             $user->update(['password_otp' => $user['password_otp']]);
             // add + in front of phone no
@@ -757,6 +786,7 @@ class UsersController extends Controller {
      *             ),
      *             @SWG\Property(
      *              property="otp",
+<<<<<<< HEAD
      *              type="string"
      *             ),
      *              @SWG\Property(
@@ -765,6 +795,8 @@ class UsersController extends Controller {
      *             ),
      *              @SWG\Property(
      *              property="bio",
+=======
+>>>>>>> 190b5620f93afd3479d72b540e33c08ec97b0810
      *              type="string"
      *             )
      *         )
@@ -780,9 +812,12 @@ class UsersController extends Controller {
             $user = Auth::user();
             $user->firstname = Input::get('first_name');
             $user->lastname = Input::get('last_name');
+<<<<<<< HEAD
             $user->date_of_birth = Input::get('date_of_birth');
             $user->bio = Input::get('bio');
 
+=======
+>>>>>>> 190b5620f93afd3479d72b540e33c08ec97b0810
             if(Input::get('otp')){
                 $user->phone_country_code = Input::get('phone_country_code');
                 $user->phone_number = Input::get('phone_number');
@@ -811,6 +846,12 @@ class UsersController extends Controller {
      *     summary="Update forget password",
      *     description="Update forget password using API's",
      *     operationId="forgetPasswordUser",
+     * @SWG\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         description="Authorization Token",
+     *         type="string"
+     *      ),
      *      @SWG\Parameter(
      *         name="body",
      *         in="body",
@@ -840,8 +881,13 @@ class UsersController extends Controller {
     public function updateForgetPassword(UpdateForgetPass $request) {
 
         try {
+<<<<<<< HEAD
             $user = User::where(['id' => $request['user_id'] ,'password_otp' => $request['otp']])->first();
             $user->update(['password' => $request['password'],['password_otp' => null],['no_of_attempts' => 0]]);
+=======
+            $user = User::find($request['user_id']);
+            $user->update(['password' => $request['password']]);
+>>>>>>> 190b5620f93afd3479d72b540e33c08ec97b0810
             $this->response['message'] = trans('password_updated_successfully');
             $this->response['status'] = 1;
             return response()->json($this->response, 200);
