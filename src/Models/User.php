@@ -86,7 +86,7 @@ class User extends Authenticatable implements HasRoleAndPermissionContract{
     const pending = '2';
     const rejected = '3';
     
-    protected $fillable = ['firstname','lastname', 'email', 'password','status','phone_number','phone_country_code','fb_id','google_id','image','social_image','is_notification','gender','refferal_code'];
+    protected $fillable = ['firstname','lastname', 'email', 'password','status','phone_number','phone_country_code','fb_id','google_id','image','social_image','is_notification','gender','refferal_code','date_of_birth','bio'];
 
     /**
      * The attributes that should be hidden for arrays.

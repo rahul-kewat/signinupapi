@@ -25,15 +25,17 @@ class EditUserProfile extends FormRequest
      */
     public function rules()
     {
-        $phoneNoRules = $this->has('otp') ? ['required','integer','digits:10','unique:users,phone_number'] : ['required','integer','digits:10'];
+        $phoneNoRules = $this->has('otp') ? ['required','integer','digits:10','exists:phone_otps,phone_no'] : ['required','integer','digits:10'];
 
         return [
             'first_name' => 'required|string|max:45',
             'last_name' => 'required|string|max:45',
             'phone_country_code' => 'required',
             'phone_number' => $phoneNoRules,
-            'gender' => 'required',
-            'otp' => 'sometimes|required|string|exists:phone_otps,otp'
+            'gender' => 'required|integer|between:0,2',
+            'otp' => 'sometimes|required|string|exists:phone_otps,otp',
+            'date_of_birth' => 'required|date_format:Y-m-d',
+            'bio' => 'required|string'
         ];
     }
     

@@ -15,14 +15,12 @@ Class SigninupapiServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/migrations');
         
         $this->publishes([
-            __DIR__.'/Http/Controllers/API/v1/' => app_path('Http/Controllers/API/v1/'),
-        ]);
-        $this->publishes([
-            __DIR__.'/Middleware' => app_path('Http/Middleware'),
+            __DIR__.'/Http/Controllers/API/v1/' => app_path('App/Http/Controllers/API/v1/'),
         ]);
         $this->publishes([
             __DIR__.'/migrations' => database_path('migrations')
         ], 'migrations');
+
         
 
     }

@@ -20,8 +20,8 @@ class UserProfile extends JsonResource
             'email' => $this->email ? $this->email : '',
             'phone_number' => $this->phone_number,
             'phone_country_code' => $this->phone_country_code ? $this->phone_country_code : '',
-            'gender' => $this->gender ? $this->gender : '' ,
-            'is_notification' => $this->is_notification,
+            'gender' => $this->gender==0 ? '0' : '1' ,
+            'is_notification' => $this->is_notification != null ? $this->is_notification:'',
             'image' => $this->image ? $this->image : '',
 
         ];
