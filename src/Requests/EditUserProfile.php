@@ -35,7 +35,7 @@ class EditUserProfile extends FormRequest
             'gender' => 'required|integer|between:0,2',
             'otp' => 'sometimes|required|string|exists:phone_otps,otp',
             'date_of_birth' => 'required|date_format:Y-m-d',
-            'bio' => 'string'
+            'bio' => ''
             
         ];
     }
