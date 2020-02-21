@@ -25,7 +25,8 @@ class UserProfile extends JsonResource
             'gender' => $this->gender==0 ? '0' : '1' ,
             'refferal_code'=> $this->refferal_code ? $this->refferal_code : '',
             'is_notification' => $this->is_notification != null ? $this->is_notification:'',
-            'image' => $this->image ? $this->image : ''
+            'image' => $this->image ? $this->image : '',
+            'bio' => $this->bio,
 
         ];
     }
