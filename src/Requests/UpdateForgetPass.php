@@ -26,8 +26,8 @@ class UpdateForgetPass extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => ['bail','required','exists:users,id', new OtpUpdateForgetPasswordAndNoOfAttemptsRule],
-            'otp' => 'required|exists:users,password_otp',
+            'user_id' => ['required','exists:users,id', new OtpUpdateForgetPasswordAndNoOfAttemptsRule],
+            'otp' => 'required',
             'password' => 'required|min:6'
         ];
     }
