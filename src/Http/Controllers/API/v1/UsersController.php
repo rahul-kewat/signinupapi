@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\DB;
 use Devrahul\Signinupapi\Models\slot;
 use Devrahul\Signinupapi\Models\Notification;
 use Devrahul\Signinupapi\Requests\RegisterUser;
+use Devrahul\Signinupapi\Requests\EditUserProfile;
 use Devrahul\Signinupapi\Requests\Login;
 use Devrahul\Signinupapi\Requests\UpdatePassword;
 use Devrahul\Signinupapi\Requests\ForgetPasswordReq;
@@ -67,6 +68,14 @@ class UsersController extends Controller {
 
     public function __construct() {
         $this->response['data'] = new \stdClass();
+    }
+
+    protected function setData($complexObject)
+    {
+        $json = json_encode($complexObject);
+        $encodedString = preg_replace('/null/', '" "' , $json);
+        $this->response['data'] = json_decode($encodedString);
+        return $this->response['data'];
     }
     
 
@@ -111,16 +120,16 @@ class UsersController extends Controller {
      *     @SWG\Response(response=500, description="Internal serve error")
      * )
      */
+    
     public function sendOtp(SendOtp $request) {
 
         try{
             //checking whether the phone no doesn't contain the string
             if(!is_numeric($request['phone_number'])) {
                 return response()->json([
-                    'status' => 0,
                     'message' => "Please enter a valid phone no"
                 ]);
-              }
+            }
 
 
             //Twilio Integration and OTP Flow starts here
@@ -136,14 +145,14 @@ class UsersController extends Controller {
                 $user_otp = phoneOtp::where('phone_no', $request['phone_number'])->first();
                 
                 if ($user_otp) {
-                    $user_otp->update(['otp' => $otp]);
+                    $user_otp->update(['otp' => $otp,'no_of_attempts'=> 0,'is_verified'=>0]);
                     $id = $user_otp->id;
+
                 } else {
                     $phoneOtp = phoneOtp::create(['phone_no' => $request['phone_number'], 'otp' => $otp,'phone_country_code' =>  $request['phone_country_code']]);                  $id = $phoneOtp->id;  
                 }
 
                 return response()->json([
-                    'status' => 1,
                     'message' => "Otp successfully sent to phone number.",
                     'data' => [
                         'id' => (int) $id
@@ -152,7 +161,6 @@ class UsersController extends Controller {
             }
             
             return response()->json([
-                'status' => 0,
                 'message' => "Something issue with Twilio Server."
             ]);
 
@@ -276,7 +284,8 @@ class UsersController extends Controller {
             $user->attachRole(1);
             
             $token = $user->createToken('Api access token')->accessToken;
-           
+            $user->is_verified=1;
+            $user->save();
             $this->insertDeviceDetails($token, $user->id);
             
             return (new UserResource($user, $token))->additional([
@@ -365,24 +374,28 @@ class UsersController extends Controller {
     public function login(Login $request) {
         
         try {
-                      
-            //checking whether the phone no doesn't contain the string
-            if(!is_numeric($request['phone_number'])) {
-                return response()->json([
-                    'status' => 0,
-                    'message' => "Please enter a valid phone no"
-                ]);
-              }
+            // if email is not set then it will go inside the if case
+            if(!isset($request['email']))
+            {
+                        //checking whether the phone no doesn't contain the string
+                    if(!is_numeric($request['phone_number'])) {
+                        return response()->json([
+                            'status' => 0,
+                            'message' => "Please enter a valid phone no"
+                        ]);
+                    }
 
-              // validating both phone country code and phone no
-              $validPhone_ccode=User::whereRaw('phone_number = ? and phone_country_code = ?',[ $request['phone_number'], $request['phone_country_code']])->first();
-              if(!$validPhone_ccode)
-              {
-                  return response()->json([
-                          'status' => 0,
-                          'message' => "Please provide valid Combination of Phone No and Country Code"
-                  ],422);
-              }
+                    // validating both phone country code and phone no
+                    $validPhone_ccode=User::whereRaw('phone_number = ? and phone_country_code = ?',[ $request['phone_number'], $request['phone_country_code']])->first();
+                    if(!$validPhone_ccode)
+                    {
+                        return response()->json([
+                                'status' => 0,
+                                'message' => "User Not Found!! "
+                        ],422);
+                    }
+            }
+            
 
             
             $isValidatePhone = User::where('phone_number',$request['email'])->first(); 
@@ -521,7 +534,7 @@ class UsersController extends Controller {
             $this->response['message'] = "User details";
             return (new UserProfile(Auth::User()))->additional([
                 'status' => 1,
-                'message' => trans('user_details_found')
+                'message' => trans('User Details Found')
             ]);
         } catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
@@ -563,7 +576,7 @@ class UsersController extends Controller {
             $token = $request->user()->tokens->find($id);
             $token->revoke();
             $this->response['status'] = 1;
-            $this->response['message'] = trans('loggedout_successfully');
+            $this->response['message'] = trans('Logged Out Successfully');
             return response($this->response, 200);
         } catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
@@ -614,15 +627,21 @@ class UsersController extends Controller {
               }
            
             $user = User::where('phone_number', $request['phone_no'])->where('phone_country_code', $request['phone_country_code'])->first();
+            if(!isset($user))
+            {
+                return $this->response['message'] = "No such combination of phone no and phone country code";
+            }
             $user['password_otp'] = rand(1000, 9999);
+            $user->is_verified = 0;
+            $user->save();
+
             $user->update(['password_otp' => $user['password_otp']]);
             // add + in front of phone no
             $phone_no = "+". $user->phone_country_code.$request['phone_no'];
-            
             $twilio = new Aloha\Twilio\Twilio(env('TWILIO_SID'), env('TWILIO_TOKEN'), env('TWILIO_SMS_FROM_NUMBER'));
             if ($user['password_otp']) {
                 if ($twilio->message($phone_no, 'Otp is ' . $user['password_otp'])) {
-                    $this->response['message'] = trans('otp_sent');
+                    $this->response['message'] = trans('OTP Sent Successfully');
                     $this->response['data'] = (object) array('id' => $user->id);
                     $this->response['status'] = 1;
                     //saving data to phoneOtp
@@ -683,11 +702,11 @@ class UsersController extends Controller {
             $user = User::where('password_otp', $request['otp'])->where('id', $request['id'])->first();
             
             if (!$user) {
-                $this->response['message'] = trans('invalid_otp');
+                $this->response['message'] = trans('Invalid OTP');
                 return response($this->response, 422);
             }
 
-            $this->response['message'] = trans('otp_matched');
+            $this->response['message'] = trans('OTP Matched Successfully');
             $this->response['data'] = (object) array('id' => $user->id);
             $this->response['status'] = 1;
             return response($this->response, 200);
@@ -721,11 +740,11 @@ class UsersController extends Controller {
      *         @SWG\Schema(
      *             type="object",
      *             @SWG\Property(
-     *              property="firstname",
+     *              property="first_name",
      *              type="string"
      *             ),
      * *           @SWG\Property(
-     *              property="lastname",
+     *              property="last_name",
      *              type="string"
      *             ),
      *             @SWG\Property(
@@ -743,6 +762,14 @@ class UsersController extends Controller {
      *             @SWG\Property(
      *              property="otp",
      *              type="string"
+     *             ),
+     *              @SWG\Property(
+     *              property="date_of_birth",
+     *              type="string"
+     *             ),
+     *              @SWG\Property(
+     *              property="bio",
+     *              type="string"
      *             )
      *         )
      *     ),
@@ -755,24 +782,96 @@ class UsersController extends Controller {
     public function editUser(EditUserProfile $request) {
         try{
             $user = Auth::user();
-            $user->firstname = Input::get('first_name');
-            $user->lastname = Input::get('last_name');
-            if(Input::get('otp')){
-                $user->phone_country_code = Input::get('phone_country_code');
-                $user->phone_number = Input::get('phone_number');
+            $userdata=phoneOtp::where(['phone_no'=> $user->phone_number, 'phone_country_code'=> $user->phone_country_code])->first();
+            if($userdata==null)
+            {
+                $this->response['message'] = trans('User Not Found');
+                return response($this->response, 422);
             }
-            $user->gender = Input::get('gender');
-            
-            $user->save();
+            //----
+            // check if previous phone no is equal to the new phone no or not
+            //----
+            if($user->phone_number != $request['phone_number']){
+                
+                // here the phone no is updated by the user
+                $newphoneotp = phoneOtp::where(['phone_no'=>$request['phone_number'],'phone_country_code'=>$request['phone_country_code']])->first();
+                if($newphoneotp == null)
+                {
+                    // means till now the otp is not sent to the new phone no 
+                    $this->response['message'] = trans('Please Send OTP to verify new Phone No');
+                    return response($this->response, 422);
+                }
+                else{
+                    //if already sent then check whether if this otp is already verified or not
+                    if($newphoneotp->is_verified == 1)
+                    {
+                        $this->response['message'] = trans('Please Resend OTP, Already Used');
+                        return response($this->response, 422);
+                    }
+                    else{
+                        //if this otp is not already verified then update the data
+                        if($request['otp'] == $newphoneotp->otp){
+                            if($newphoneotp->is_verified ==0)
+                            {
+                                $user->firstname = Input::get('first_name');
+                                $user->lastname = Input::get('last_name');
+                                $user->date_of_birth = Input::get('date_of_birth');
+                                $user->bio = Input::get('bio');
+                                $user->phone_country_code = Input::get('phone_country_code');
+                                $user->phone_number = Input::get('phone_number');   
+                                $user->gender = Input::get('gender'); 
+                                $user->is_verified=1;
+                                $user->no_of_attempts =0;
+                                $user->save();
+                                $newphoneotp->is_verified = 1;
+                                $newphoneotp->no_of_attempts = 0;
+                                $newphoneotp->save();
+                                $this->setData($user);
+                            }
+                            else{
+                                $this->response['message'] = trans('OTP Already Verified. Please send again an OTP request.');
+                                return response($this->response, 422);
+                            }
+                        }
+                        else{
+                            if($newphoneotp->no_of_attempts>=3)
+                            {
+                                $this->response['message'] = trans('No of attempts exceeded. Try after sending new OTP');
+                                return response($this->response, 422);
+                            }
+                            $newphoneotp->no_of_attempts = $newphoneotp->no_of_attempts +1;
+                            $newphoneotp->save();
+                            $this->response['message'] = trans('OTP Not Matched');
+                            return response($this->response, 422);
+                        }
+                    }
+                    
+                }
+            }
+            else
+            {
+                 //if new no is same as old no then update the details
+                 $user->firstname = Input::get('first_name');
+                 $user->lastname = Input::get('last_name');
+                 $user->date_of_birth = Input::get('date_of_birth');
+                 $user->bio = Input::get('bio');
+                 $user->gender = Input::get('gender'); 
+                 $user->is_verified=1;
+                 $user->password_otp=0;
+                 $user->no_of_attempts =0;
+                 $user->save();
+                 $this->setData($user);
+            }
+
             return (new UserResource($user))->additional([
                         'status' => 1,
-                        'message' => trans('user_updated_successfully')
+                        'message' => trans('User Updated Successfully')
             ]);
 
         }
         catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
-            //$this->response['message'] = $ex->getMessage();
+            $this->response['message'] = $ex->getMessage();
             return response($this->response, 500);
         }
     }
@@ -784,12 +883,6 @@ class UsersController extends Controller {
      *     summary="Update forget password",
      *     description="Update forget password using API's",
      *     operationId="forgetPasswordUser",
-     * @SWG\Parameter(
-     *         name="Authorization",
-     *         in="header",
-     *         description="Authorization Token",
-     *         type="string"
-     *      ),
      *      @SWG\Parameter(
      *         name="body",
      *         in="body",
@@ -799,6 +892,10 @@ class UsersController extends Controller {
      *             @SWG\Property(
      *              property="user_id",
      *              type="integer"
+     *             ),
+     *             @SWG\Property(
+     *              property="otp",
+     *              type="string"
      *             ),
      *             @SWG\Property(
      *              property="password",
@@ -812,12 +909,76 @@ class UsersController extends Controller {
      *     @SWG\Response(response=500, description="Internal serve error")
      * )
      */
-    public function updateForgetPassword(UpdateForgetPass $request) {
+    public function updateForgetPassword(Request $request) {
 
         try {
-            $user = User::find($request['user_id']);
-            $user->update(['password' => $request['password']]);
-            $this->response['message'] = trans('password_updated_successfully');
+            //checking phone otp
+            if(Input::get('user_id')==null)
+            {
+                $this->response['message'] = trans('User ID Field is Required');
+                $this->response['status'] = 1;
+                return response()->json($this->response, 422);
+            }
+            if(Input::get('otp')==null)
+            {
+                $this->response['message'] = trans('OTP Field is Required');
+                $this->response['status'] = 1;
+                return response()->json($this->response, 422);
+            }
+            if(Input::get('password')==null)
+            {
+                $this->response['message'] = trans('Password Field is required');
+                $this->response['status'] = 1;
+                return response()->json($this->response, 422);
+            }
+
+            $phoneOtpData = User::where([['id','=',$request['user_id']],['password_otp','=',$request['otp']]])->first();
+            if($phoneOtpData == null)
+            {
+                $this->response['message'] = trans('Please enter a user id or OTP or try sending again a new OTP');
+                $this->response['status'] = 1;
+                return response()->json($this->response, 422);
+            }
+            if($phoneOtpData->is_verified == 0)
+            {
+                if($phoneOtpData->password_otp != 0)
+                    { // if no is not verified then enter the condition
+                        if($phoneOtpData->no_of_attempts < 3)
+                        {// if no of attempts is less then the 3 
+                            $phoneOtpData->no_of_attempts = $phoneOtpData->no_of_attempts + 1;
+                            $phoneOtpData->save();
+                        }
+                        else{
+                            $phoneOtpData->password_otp = 0;
+                            $phoneOtpData->no_of_attempts=0;
+                            $phoneOtpData->save();
+                            $this->response['message'] = "No of attempts exceeded";
+                            $this->response['status'] = 1;
+                            return response()->json($this->response, 422);
+                        }
+                    }
+                    else{
+                        $this->response['message'] = "Please send OTP first";
+                        $this->response['status'] = 1;
+                        return response()->json($this->response, 422);
+                    }
+            
+            }
+            else
+            {
+                $this->response['message'] = "This OTP is already Verified";
+                $this->response['status'] = 1;
+                return response()->json($this->response, 422);
+            }
+
+            // updating data
+            $user = User::where(['id' => $request['user_id'] ,'password_otp' => $request['otp']])->first();
+            $user->password=$request['password'];
+            $user->password_otp = 0;
+            $user->no_of_attempts =0;
+            $user->is_verified =1;
+            $user->save();
+            $this->response['message'] = trans('Password Updated Successfully');
             $this->response['status'] = 1;
             return response()->json($this->response, 200);
         } catch (\Exception $ex) {
@@ -874,7 +1035,7 @@ class UsersController extends Controller {
             $confirmOtp->save();
             $filename = 'api_datalogger_' . date('d-m-y') . '.log';
             
-            $this->response['message'] = trans('otp_matched_successfully');
+            $this->response['message'] = trans('OTP Matched Successfully');
             $this->response['status'] = 1;
             return response()->json($this->response, 200);
 
@@ -986,7 +1147,7 @@ class UsersController extends Controller {
                     $this->insertDeviceDetails($token, $user->id); 
                     return (new UserResource($user, $token))->additional([
                         'status' => 1,
-                        'message' => trans('loggedin_successfully')
+                        'message' => trans('Logged In Successfully')
                     ]); 
                 }
                 else{
@@ -999,7 +1160,7 @@ class UsersController extends Controller {
                         $this->insertDeviceDetails($token, $user->id); 
                         return (new UserResource($user, $token))->additional([
                             'status' => 1,
-                            'message' => trans('loggedin_successfully')
+                            'message' => trans('Logged In Successfully')
                         ]); 
                     }
                     else{
@@ -1017,7 +1178,7 @@ class UsersController extends Controller {
                         $this->insertDeviceDetails($token, $user->id); 
                         return (new UserResource($user, $token))->additional([
                             'status' => 1,
-                            'message' => trans('loggedin_successfully')
+                            'message' => trans('Logged In Successfully')
                         ]); 
                     }
                 }
@@ -1034,7 +1195,7 @@ class UsersController extends Controller {
                     $user->update();
                     return (new UserResource($user, $token))->additional([
                         'status' => 1,
-                        'message' => trans('loggedin_successfully')
+                        'message' => trans('Logged In Successfully')
                     ]); 
                 }
                 else{
@@ -1047,7 +1208,7 @@ class UsersController extends Controller {
                         $this->insertDeviceDetails($token, $user->id); 
                         return (new UserResource($user, $token))->additional([
                             'status' => 1,
-                            'message' => trans('loggedin_successfully')
+                            'message' => trans('Logged In Successfully')
                         ]); 
                     }
                     else{
@@ -1065,7 +1226,7 @@ class UsersController extends Controller {
                         $this->insertDeviceDetails($token, $user->id); 
                         return (new UserResource($user, $token))->additional([
                             'status' => 1,
-                            'message' => trans('loggedin_successfully')
+                            'message' => trans('Logged In Successfully')
                         ]); 
                     }
                 }
@@ -1120,7 +1281,7 @@ class UsersController extends Controller {
             //$this->response['data']->profile_image = $img;
             $this->response['data']->profile_image  = $user->image;
             $this->response['status'] = 1;
-            $this->response['message'] = trans('image_uploaded');
+            $this->response['message'] = trans('Image Uploaded Successfully');
             return response($this->response, 200);
             /* return (new UserResource($user))->additional([
               'status' => 1,
@@ -1149,7 +1310,7 @@ class UsersController extends Controller {
             $this->response['data']->profile_image = $img;
             $this->response['data']->image_name = $filename;
             $this->response['status'] = 1;
-            $this->response['message'] = trans('image_uploaded');
+            $this->response['message'] = trans('Image Uploaded Successfully');
             return response($this->response, 200);
         } catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
@@ -1176,7 +1337,7 @@ class UsersController extends Controller {
             $this->response['data']->vender_doc = $doc;
             $this->response['data']->doc_name = $filename;
             $this->response['status'] = 1;
-            $this->response['message'] = trans('doc_uploaded');
+            $this->response['message'] = trans('Doc Uploaded Successfully');
             return response($this->response, 200);
         } catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
@@ -1237,7 +1398,7 @@ class UsersController extends Controller {
 
             $checkEmailalreadyexist = User::where('email', '=', $request['email'])->first();
             if ($checkEmailalreadyexist) {
-                $this->response['message'] = trans('email_already_exist');
+                $this->response['message'] = trans('Email Already Exist');
                 return response($this->response, 403);
             }
 
@@ -1255,7 +1416,7 @@ class UsersController extends Controller {
             }
             Mail::to($check_otp_already_sent->email)->send(new Activate($user));
             $this->response['status'] = 1;
-            $this->response['message'] = trans('email_otp_sent');
+            $this->response['message'] = trans('Email Otp Sent');
             return response($this->response, 200);
         } catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
@@ -1278,7 +1439,7 @@ class UsersController extends Controller {
 
             $user = Activation::where('token', $request['otp'])->where('id_user', $request['id'])->first();
             if (!$user) {
-                $this->response['message'] = trans('invalid_otp');
+                $this->response['message'] = trans('Invalid OTP');
                 return response($this->response, 200);
             }
             DB::table('users')->where('id', $user->id_user)->update(['email' => $user->email]);
@@ -1287,7 +1448,7 @@ class UsersController extends Controller {
             $this->insertDeviceDetails($token, $request['id']);
             return (new UserResource($user, $token))->additional([
                         'status' => 1,
-                        'message' => trans('otp_matched')
+                        'message' => trans('OTP Matched Successfully')
             ]);
         } catch (\Exception $ex) {
 
@@ -1310,7 +1471,7 @@ class UsersController extends Controller {
             $user = User::where('email', $user->email)->first();
             if (!$user) {
                 $this->response['status'] = 1;
-                $this->response['message'] = trans('email_not_exist');
+                $this->response['message'] = trans('E-Mail does not exists');
                 return response($this->response, 200);
             }
 
@@ -1326,7 +1487,7 @@ class UsersController extends Controller {
             Mail::to($request['email'])->send(new UpdateEmail($user));
             return (new UserResource($user))->additional([
                         'status' => 1,
-                        'message' => trans('otp_sent_on_email')
+                        'message' => trans('OTP sent to the E-Mail')
             ]);
         } catch (\Exception $ex) {
             $this->response['message'] = trans('something_wrong');
@@ -1357,7 +1518,7 @@ class UsersController extends Controller {
             $user_otp = phoneOtp::where('phone_no', $request['phone_no'])->first();
 
             if (isset($user_otp->is_verified) && $user_otp->is_verified != 0) {
-                $this->response['message'] = trans('phone_already_registered');
+                $this->response['message'] = trans('Phone Already Registered');
                 return response()->json($this->response, 409);
             }
             $otp = rand(1000, 9999);

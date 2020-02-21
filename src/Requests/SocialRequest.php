@@ -29,7 +29,7 @@ class SocialRequest extends FormRequest
             'type'  => 'required|string|in:facebook,google',
             'social_id'    => 'required|string',
             'firstname'    => 'sometimes|required|string',
-            'phone_country_code'    => 'sometimes|required|string',
+            'phone_country_code'    => 'sometimes|required|integer',
             'phone_number'    => 'sometimes|required|integer|digits:10',
             'social_image'    => 'sometimes|required|string'
         ];
