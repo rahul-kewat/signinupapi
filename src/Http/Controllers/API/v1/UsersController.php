@@ -145,7 +145,9 @@ class UsersController extends Controller {
                 $user_otp = phoneOtp::where('phone_no', $request['phone_number'])->first();
                 
                 if ($user_otp) {
+
                     $user_otp->update(['otp' => $otp,'no_of_attempts'=> 0,'is_verified'=>0]);
+
                     $id = $user_otp->id;
 
                 } else {
@@ -391,7 +393,9 @@ class UsersController extends Controller {
                     {
                         return response()->json([
                                 'status' => 0,
-                                'message' => "User Not Found!! "
+
+                                'message' => "Please provide valid Combination of Phone No and Country Code"
+
                         ],422);
                     }
             }
@@ -782,6 +786,7 @@ class UsersController extends Controller {
     public function editUser(EditUserProfile $request) {
         try{
             $user = Auth::user();
+
             $userdata=phoneOtp::where(['phone_no'=> $user->phone_number, 'phone_country_code'=> $user->phone_country_code])->first();
             if($userdata==null)
             {
@@ -862,6 +867,7 @@ class UsersController extends Controller {
                  $user->save();
                  $this->setData($user);
             }
+
 
             return (new UserResource($user))->additional([
                         'status' => 1,
@@ -979,6 +985,7 @@ class UsersController extends Controller {
             $user->is_verified =1;
             $user->save();
             $this->response['message'] = trans('Password Updated Successfully');
+
             $this->response['status'] = 1;
             return response()->json($this->response, 200);
         } catch (\Exception $ex) {
