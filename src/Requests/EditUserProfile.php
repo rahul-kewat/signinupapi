@@ -36,8 +36,10 @@ class EditUserProfile extends FormRequest
             'otp' => 'sometimes|required|string|exists:phone_otps,otp',
             'date_of_birth' => 'required|date_format:Y-m-d',
             'bio' => 'required|string'
+            
         ];
     }
+    
     
     /**
      * Overwrite Validation error response
