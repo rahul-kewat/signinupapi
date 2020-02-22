@@ -34,7 +34,7 @@ class User extends Resource {
             'phone_country_code' => $this->phone_country_code ? $this->phone_country_code : '',
             'gender' => $this->gender ? $this->gender : '',
             'token' => $this->token,
-            'bio' => $this->bio,
+            'bio' => $this->bio ? $this->bio : '',
             'date_of_birth' => $this->date_of_birth,
             'refferal_code' => $this->refferal_code != null ? $this->refferal_code : '' ,
             'is_notification' => $this->is_notification != null ? $this->is_notification : ''
