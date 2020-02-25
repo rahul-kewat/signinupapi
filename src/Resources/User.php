@@ -17,10 +17,12 @@ class User extends Resource {
      * @return array
      */
     private $token;
+    private $sug_price_value;
 
-    public function __construct($resource, $token = "") {
+    public function __construct($resource, $token = "",$sug_price_value) {
         parent::__construct($resource);
         $this->token = $token;
+        $this->sug_price_value = $sug_price_value;
     }
 
     public function toArray($request) {
@@ -35,6 +37,7 @@ class User extends Resource {
             'gender' => $this->gender ? $this->gender : '',
             'token' => $this->token,
             'bio' => $this->bio ? $this->bio : '',
+            'sug_price_value' => $this->sug_price_value ? $this->sug_price_value : '0.00',
             'date_of_birth' => $this->date_of_birth,
             'refferal_code' => $this->refferal_code != null ? $this->refferal_code : '' ,
             'is_notification' => $this->is_notification != null ? $this->is_notification : ''

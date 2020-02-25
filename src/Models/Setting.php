@@ -1,12 +1,12 @@
 <?php
 
-namespace Devrahul\Signinuppackage\Models;
+namespace Devrahul\Signinupapi\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-   
+
     /**
      * The database table used by the model.
      *
