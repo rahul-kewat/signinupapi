@@ -12,6 +12,12 @@ class UserProfile extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
+    public function __construct($resource,$sug_price_value) {
+        parent::__construct($resource);
+        $this->sug_price_value = $sug_price_value;
+    }
+
+
     public function toArray($request)
     {
         return [
