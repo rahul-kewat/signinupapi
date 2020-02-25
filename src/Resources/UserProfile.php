@@ -33,8 +33,8 @@ class UserProfile extends JsonResource
             'sug_price_value' => $this->sug_price_value ? $this->sug_price_value : '0.00',
             'is_notification' => $this->is_notification != null ? $this->is_notification:'',
             'image' => $this->image ? $this->image : '',
-            'bio' => $this->bio,
-
+            'bio' => $this->bio  != null ? $this->bio : '',
+            
         ];
     }
 }
