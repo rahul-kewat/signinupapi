@@ -12,9 +12,11 @@ class UserProfile extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function __construct($resource,$sug_price_value) {
+    public function __construct($resource,$is_vehicle_added,$is_bank_detail_added,$sug_price_value) {
         parent::__construct($resource);
         $this->sug_price_value = $sug_price_value;
+        $this->is_vehicle_added = $is_vehicle_added;
+        $this->is_bank_detail_added = $is_bank_detail_added;
     }
 
 
@@ -34,7 +36,8 @@ class UserProfile extends JsonResource
             'is_notification' => $this->is_notification != null ? $this->is_notification:'',
             'image' => $this->image ? $this->image : '',
             'bio' => $this->bio ? $this->bio : '',
-
+            'is_vehicle_added' => $this->is_vehicle_added,
+            'is_bank_detail_added' => $this->is_bank_detail_added ,
         ];
     }
 }

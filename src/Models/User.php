@@ -257,10 +257,17 @@ class User extends Authenticatable implements HasRoleAndPermissionContract{
     }
 
 
-     /**
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-  public function role() {
-       return $this->belongsToMany('App\Role')->withTimestamps();
-   }
+    public function role() {
+        return $this->belongsToMany('App\Role')->withTimestamps();
+    }
+
+    public function userIsVehicle(){
+        return $this->hasMany('App\Models\Vehicle','user_id','id');
+    }
+    // public function userIsBankDetail(){
+    //     return $this->hasMany('\App\Models\Vehicle','user_id','id');
+    // }
 }
