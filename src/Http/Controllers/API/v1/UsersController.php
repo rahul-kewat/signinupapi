@@ -53,7 +53,8 @@ use Devrahul\Signinupapi\Resources\UserProfile;
 use Devrahul\Signinupapi\Requests\ProfileRequest;
 use Hash;
 use App;
-
+use Response;
+use DateTime;
 
 use Devrahul\Signinupapi\Traits\ApiUserTrait;
 
@@ -289,7 +290,7 @@ class UsersController extends Controller {
             $user->save();
             $this->insertDeviceDetails($token, $user->id);
             
-            return (new UserResource($user, $token))->additional([
+            return (new UserResource($user, $token,"","",""))->additional([
                         'status' => 1,
                         'message' => trans('registered_successfully')
             ]);
@@ -416,15 +417,27 @@ class UsersController extends Controller {
                 
                 if ($user->status == User::inActive) {
 
-                    return (new UserResource($user, $token, $sug_price_value->sug_price_value))->additional([
+                    return (new UserResource($user, $token,"","", $sug_price_value->sug_price_value))->additional([
                                 'status' => 0,
-                                'message' => trans('activate_account_first')
+                                'message' => trans('Activate Account First')
                     ]);
                 }
 
-                return (new UserResource($user, $token, $sug_price_value->sug_price_value))->additional([
+                $is_vehicle_added =  DB::table('ride_vehicle')
+                                    ->where('user_id',Auth::user()->id)
+                                    ->get()
+                                    ->count();
+
+                // vehicle details and bank details fetch
+                if($is_vehicle_added>0) {$is_vehicle_added=1;} else{ $is_vehicle_added=0;}
+                $is_bank_detail_added = DB::table('user_bank_details')
+                                        ->where('user_id',Auth::user()->id)
+                                        ->get()
+                                        ->count();
+                if($is_bank_detail_added>0) {$is_bank_detail_added=1;} else {$is_bank_detail_added=0;}
+                return (new UserResource($user, $token,$is_vehicle_added,$is_bank_detail_added, $sug_price_value->sug_price_value))->additional([
                             'status' => 1,
-                            'message' => trans('user_loggedin_successfully')
+                            'message' => trans('User Logged In Successfully')
                 ]);
 
             } else {
@@ -436,7 +449,7 @@ class UsersController extends Controller {
             }
         } catch (\Exception $ex) {
             
-            $this->response['message'] = trans('something_wrong');
+            $this->response['message'] = $ex->getMessage();
             return response($this->response, 500);
         }
     }
@@ -515,9 +528,9 @@ class UsersController extends Controller {
      *     path="/user",
      *     tags={"Users"},
      *     summary="Get login user detail",
-     *     description="Get user detail by id using API's",
+     *     description="Get user detail using API's",
      *     operationId="getUserDetails",
-     *      @SWG\Parameter(
+     *     @SWG\Parameter(
      *         name="Authorization",
      *         in="header",
      *         description="Authorization Token",
@@ -537,12 +550,153 @@ class UsersController extends Controller {
             // $sug_price_value->sug_price_value will fetch price value from settings table so, that
             // when ever admin changes base price value for suggested price per km then it can be used to fetch data
             $sug_price_value = Setting::select('sug_price_value')->latest()->first();
-            return (new UserProfile(Auth::User(), $sug_price_value->sug_price_value))->additional([
+            
+            $is_vehicle_added =  DB::table('ride_vehicle')
+                                    ->where('user_id',Auth::user()->id)
+                                    ->get()
+                                    ->count();
+
+            if($is_vehicle_added>0) {$is_vehicle_added=1;} else{ $is_vehicle_added=0;}
+            
+
+            $is_bank_detail_added = DB::table('user_bank_details')
+                                    ->where('user_id',Auth::user()->id)
+                                    ->get()
+                                    ->count();
+            if($is_bank_detail_added>0) {$is_bank_detail_added=1;} else {$is_bank_detail_added=0;}
+
+            $datareturned = (new UserProfile(Auth::User(), $is_vehicle_added, $is_bank_detail_added ,$sug_price_value->sug_price_value))->additional([
                 'status' => 1,
+                // 'is_vehicle_added'=> $is_vehicle_added,
+                // 'is_bank_detail_added'  => $is_bank_detail_added,
                 'message' => trans('User Details Found')
             ]);
+            // $datareturned = json_encode($datareturned);
+            // $datareturned['is_vehicle_added']= $is_vehicle_added;
+            // $datareturned = json_decode($datareturned);
+
+            return $datareturned;
         } catch (\Exception $ex) {
-            $this->response['message'] ="Something Went Wrong";
+            $this->response['message'] =$ex->getMessage();
+            return response($this->response, 500);
+        }
+
+    }
+
+    /**
+     * @SWG\Get(
+     *     path="/getUserDetailsByID",
+     *     tags={"Users"},
+     *     summary="Get user details by id",
+     *     description="Get user detail by id using API's",
+     *     operationId="getUserDetailsById",
+     *      @SWG\Parameter(
+     *         name="body",
+     *         in="body",
+     *         description="Get User Details by ID",
+     *         @SWG\Schema(
+     *             type="object",
+     *             @SWG\Property(
+     *              property="id",
+     *              type="integer"
+     *             )
+     *         )
+     *     ),
+     *     @SWG\Response(response=200, description="Successful operation"),
+     *     @SWG\Response(response=422, description="Validation Error and  Unprocessable Entity")*      ,
+     *     @SWG\Response(response=401, description="Invalid Token And Unauthenticated"),
+     *     @SWG\Response(response=500, description="Internal serve error")
+     * )
+     */
+    public function getUserDetails(Request $request){
+
+        try {
+            if($request->id == null){
+                $this->response['message'] ="Please pass the id to fetch data";
+                return response($this->response, 200);
+            }
+            
+            // $user = User::where('id',$request->id)
+            //                 ->whereRaw(' inner join vehic')
+            //                 ->get()->first();
+            
+            $user = DB::table("users")
+                        ->select("users.id","firstname","lastname","bio","date_of_birth","image","social_image","review.rating","ride_vehicle.car_manufacture","ride_vehicle.car_model","ride_vehicle.car_type","ride_vehicle.car_color","user_addresses.city","user_addresses.full_address","user_addresses.country","ride_vehicle.register_year")
+                        ->leftjoin('review','users.id','=','review.user_id')
+                        ->leftjoin('ride_vehicle','users.id','=','ride_vehicle.user_id')
+                        ->leftjoin('user_addresses','users.id','=','user_addresses.user_id')
+                        
+                        ->where('users.id',$request->id)
+                        ->orderBy('ride_vehicle.created_at','desc')
+                        // ->tosql();
+                        ->get()->first();
+                    
+            
+            // $user = DB::table("users")
+            //             ->select("user_amenities.amenities_name")
+            //             ->leftjoin('user_amenities','users.id','=','user_amenities.user_id')
+            //             ->join('amenities','users.id','=','user_amenities.user_id')
+            //             ->where('users.id',$request->id);
+
+            //calculating date of birth
+            if($user== null){
+                $this->response['message'] = "No User Found with this ID";
+                return response($this->response, 200);
+            }
+            if($user->date_of_birth != null){
+                $d1 = new DateTime(now());
+                $d2 = new DateTime($user->date_of_birth);
+                $age = $d2->diff($d1);
+            }
+            
+            
+            
+            if($user!=null)
+            {
+                //calculating the rides offered and rides taken
+                $noofridesoffered = \App\Models\Rides::where('user_id', $user->id)->count();
+                $noofridestaken = \App\Models\RideAccepted::where('user_id', $user->id)->count();
+
+                $data = [
+                    'message' => 'User Details Found',
+                    'data' => [
+                        'No_of_rides_offered' => $noofridesoffered,
+                        'No_of_rides_taken' => $noofridestaken ,
+                        'firstname' => $user->firstname,
+                        'lastname' => $user->lastname,
+                        'bio' => $user->bio != null ? $user->bio : "",
+                        'social_image' => $user->social_image != null ? $user->social_image : "",
+                        'image' => $user->image != null ? $user->image : "",
+                        'age' => $user->date_of_birth != null ? $age->y : "",
+                        'rating' => $user->rating != null ? $user->rating : "0",
+                        'car_manufacture' =>  $user->car_manufacture != null ? $user->car_manufacture : "",
+                        'car_model' => $user->car_model != null ? $user->car_model : "",
+                        'car_type' => $user->car_type != null ? $user->car_type : "",
+                        'car_color' => $user->car_color != null ? $user->car_color : "",
+                        'register_year' => $user->register_year != null ? $user->register_year : "",
+                        'city' => $user->city != null ? $user->city : "",
+                        'full_address' => $user->full_address != null ? $user->full_address : "",
+                        'country' => $user->country != null ? $user->country : "",
+                        
+                    ]
+                ];
+                
+                // $this->response->message = "User details";
+                // $this->response->data->firstname = $user->first_name;
+                // $this->response->data->lastname = $user->last_name;
+                // $this->response->data->bio = $user->bio;
+                // $this->response->data->date_of_birth = $user->date_of_birth;
+                $this->setData([$data]);
+                return response()->json($data);
+                return response($this->response, 200);
+                
+            }
+            
+            $this->response['message'] = "No User Found with this ID";
+            return response($this->response, 200);
+
+        } catch (\Exception $ex) {
+            $this->response['message'] = $ex->getMessage();
             return response($this->response, 500);
         }
 
@@ -809,7 +963,7 @@ class UsersController extends Controller {
             }
             
             $user->save();
-            return (new UserResource($user))->additional([
+            return (new UserResource($user,"","","",""))->additional([
                         'status' => 1,
                         'message' => trans('User Details updated successfully')
             ]);
@@ -1192,7 +1346,7 @@ class UsersController extends Controller {
                     $user->social_image = $image_social;
                     $user->update();
                     $this->insertDeviceDetails($token, $user->id); 
-                    return (new UserResource($user, $token))->additional([
+                    return (new UserResource($user, $token,"","",""))->additional([
                         'status' => 1,
                         'message' => trans('Logged In Successfully')
                     ]); 
@@ -1205,7 +1359,7 @@ class UsersController extends Controller {
                         $user->update();
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token))->additional([
+                        return (new UserResource($user, $token,"","",""))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1223,7 +1377,7 @@ class UsersController extends Controller {
 
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token))->additional([
+                        return (new UserResource($user, $token,"","",""))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1240,7 +1394,7 @@ class UsersController extends Controller {
                     $this->insertDeviceDetails($token, $user->id); 
                     $user->social_image = $image_social;
                     $user->update();
-                    return (new UserResource($user, $token))->additional([
+                    return (new UserResource($user, $token,"","",""))->additional([
                         'status' => 1,
                         'message' => trans('Logged In Successfully')
                     ]); 
@@ -1253,7 +1407,7 @@ class UsersController extends Controller {
                         $user->update();
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token))->additional([
+                        return (new UserResource($user, $token,"","",""))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1271,7 +1425,7 @@ class UsersController extends Controller {
 
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token))->additional([
+                        return (new UserResource($user, $token,"","",""))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1330,7 +1484,7 @@ class UsersController extends Controller {
             $this->response['status'] = 1;
             $this->response['message'] = trans('Image Uploaded Successfully');
             return response($this->response, 200);
-            /* return (new UserResource($user))->additional([
+            /* return (new UserResource($user,"","","",""))->additional([
               'status' => 1,
               'message' => trans('image_uploaded')
               ]); */
@@ -1417,7 +1571,7 @@ class UsersController extends Controller {
                 $user->update(['email' => $token->email]);
                 $token->delete();
                 $message = "Account activated successfully";
-                return (new UserResource($user))->additional([
+                return (new UserResource($user,"","","",""))->additional([
                             'status' => 1,
                             'message' => $message
                 ]);
@@ -1493,7 +1647,7 @@ class UsersController extends Controller {
             $user = User::find($user->id_user);
             $token = $user->createToken('Api access token')->accessToken;
             $this->insertDeviceDetails($token, $request['id']);
-            return (new UserResource($user, $token))->additional([
+            return (new UserResource($user, $token,"","",""))->additional([
                         'status' => 1,
                         'message' => trans('OTP Matched Successfully')
             ]);
@@ -1532,7 +1686,7 @@ class UsersController extends Controller {
                 Activation::create(['id_user' => $user->id, 'token' => $user['token'], 'email' => $request['email']]);
             }
             Mail::to($request['email'])->send(new UpdateEmail($user));
-            return (new UserResource($user))->additional([
+            return (new UserResource($user,"","","",""))->additional([
                         'status' => 1,
                         'message' => trans('OTP sent to the E-Mail')
             ]);
