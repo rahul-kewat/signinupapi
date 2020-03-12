@@ -42,7 +42,7 @@ class User extends Resource {
             'token' => $this->token,
             'bio' => $this->bio ? $this->bio : '',
             'sug_price_value' => $this->sug_price_value ? $this->sug_price_value : '0.00',
-            'date_of_birth' => $this->date_of_birth,
+            'date_of_birth' => $this->date_of_birth ? $this->date_of_birth : '',
             'referral_code' => $this->referral_code != null ? $this->referral_code : '' ,
             'is_notification' => $this->is_notification != null ? $this->is_notification : '',
             'is_vehicle_added' => $this->is_vehicle_added != null ? $this->is_vehicle_added : '0',
