@@ -318,10 +318,11 @@ class UsersController extends Controller {
             }
             
             
+            $sug_price_value = Setting::select('sug_price_value')->latest()->first();
 
-            return (new UserResource($user, $token,"","",""))->additional([
+            return (new UserResource($user, $token,"","",$sug_price_value->sug_price_value))->additional([
                         'status' => 1,
-                        'message' => trans('registered_successfully')
+                        'message' => trans('Registered Successfully')
             ]);
 
         } catch (\Exception $ex) {
