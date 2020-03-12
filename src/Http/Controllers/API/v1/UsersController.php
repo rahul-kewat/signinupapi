@@ -204,7 +204,7 @@ class UsersController extends Controller {
      *              type="string"
      *             ),
      *             @SWG\Property(
-     *              property="refferal_code",
+     *              property="referral_code",
      *              type="string"
      *             ),  
      *             @SWG\Property(
@@ -259,8 +259,16 @@ class UsersController extends Controller {
      */
 
     public function register(RegisterUser $request) {
-   
+    
         try {
+            $userReferr = User::where('referral_code', $request['referral_code'])->first();
+                if($userReferr == null){
+                    return response()->json([
+                        'status' => 0,
+                        'message' => "Invalid Invitation Code"
+                    ],422);
+                }
+            
             
             $validPhone_ccode=phoneOtp::whereRaw('phone_no = ? and phone_country_code = ?',[ $request['phone_number'], $request['phone_country_code']])->first();
             if(!$validPhone_ccode)
@@ -279,8 +287,16 @@ class UsersController extends Controller {
                     'message' => "Please provide valid OTP."
                 ],422);
             }
+            // Store the  Referral Code into referral_record with referral_record owner id
+            // and current user record
+            $registerThroughReferral = $request['referral_code'];
 
+            // Create New Referral Code of the user... 
+            // Generating 6 Digit referral code for the registered user
+            $referralcodeString = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $request['referral_code'] =  substr(str_shuffle($referralcodeString), 0, 6);
             $request['status'] = User::active;
+            
             $user = User::create($request->all());   
 
             $user->attachRole(1);
@@ -290,6 +306,19 @@ class UsersController extends Controller {
             $user->save();
             $this->insertDeviceDetails($token, $user->id);
             
+            
+            // now fetch the user id of the user whose referral code is used in registration
+            if($registerThroughReferral != null or $registerThroughReferral != ""){
+                if($userReferr != null){
+                    $values = array('user_id_one' => $userReferr->id,'user_id_two' =>  $user->id, 'code' => $request['referral_code']);
+                    $insertReferralRecord = DB::table('referral_record')
+                                                ->insert($values);
+                }
+                
+            }
+            
+            
+
             return (new UserResource($user, $token,"","",""))->additional([
                         'status' => 1,
                         'message' => trans('registered_successfully')
@@ -621,7 +650,7 @@ class UsersController extends Controller {
             //                 ->get()->first();
             
             $user = DB::table("users")
-                        ->select("users.id","firstname","lastname","bio","date_of_birth","image","social_image","review.rating","ride_vehicle.car_manufacture","ride_vehicle.car_model","ride_vehicle.car_type","ride_vehicle.car_color","user_addresses.city","user_addresses.full_address","user_addresses.country","ride_vehicle.register_year")
+                        ->select("users.id","firstname","lastname","bio","date_of_birth","image","social_image","review.rating","ride_vehicle.car_manufacture","ride_vehicle.car_model","ride_vehicle.car_type","ride_vehicle.car_color","user_addresses.city","user_addresses.full_address","user_addresses.country","ride_vehicle.register_year","phone_number","phone_country_code")
                         ->leftjoin('review','users.id','=','review.user_id')
                         ->leftjoin('ride_vehicle','users.id','=','ride_vehicle.user_id')
                         ->leftjoin('user_addresses','users.id','=','user_addresses.user_id')
@@ -677,6 +706,8 @@ class UsersController extends Controller {
                         'city' => $user->city != null ? $user->city : "",
                         'full_address' => $user->full_address != null ? $user->full_address : "",
                         'country' => $user->country != null ? $user->country : "",
+                        'phone_country_code' => $user->phone_country_code != null ? $user->phone_country_code : "",
+                        'phone_number' => $user->phone_number != null ? $user->phone_number : "",
                         
                     ]
                 ];
@@ -1489,7 +1520,7 @@ class UsersController extends Controller {
               'message' => trans('image_uploaded')
               ]); */
         } catch (\Exception $ex) {
-            $this->response['message'] = trans('something_wrong');
+            $this->response['message'] = $ex->getMessage();
             return response($this->response, 500);
         }
     }
@@ -1810,5 +1841,5 @@ class UsersController extends Controller {
             echo 'not sent';
         }
     }
- 
+
 }

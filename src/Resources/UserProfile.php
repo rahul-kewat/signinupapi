@@ -31,7 +31,7 @@ class UserProfile extends JsonResource
             'phone_number' => $this->phone_number,
             'phone_country_code' => $this->phone_country_code ? $this->phone_country_code : '',
             'gender' => $this->gender==0 ? '0' : '1' ,
-            'refferal_code'=> $this->refferal_code ? $this->refferal_code : '',
+            'referral_code'=> $this->referral_code ? $this->referral_code : '',
             'sug_price_value' => $this->sug_price_value ? $this->sug_price_value : '0.00',
             'is_notification' => $this->is_notification != null ? $this->is_notification:'',
             'image' => $this->image ? $this->image : '',
