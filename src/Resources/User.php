@@ -20,13 +20,15 @@ class User extends Resource {
     private $sug_price_value;
     private $is_vehicle_added;
     private $is_bank_detail_added;
+    private $referral_code_text;
 
-    public function __construct($resource, $token = "",$is_vehicle_added,$is_bank_detail_added,$sug_price_value) {
+    public function __construct($resource, $token = "",$is_vehicle_added,$is_bank_detail_added,$sug_price_value,$referral_code_text) {
         parent::__construct($resource);
         $this->token = $token;
         $this->sug_price_value = $sug_price_value;
         $this->is_vehicle_added = $is_vehicle_added;
         $this->is_bank_detail_added = $is_bank_detail_added;
+        $this->referral_code_text = $referral_code_text;
     }
 
     public function toArray($request) {
@@ -47,6 +49,7 @@ class User extends Resource {
             'is_notification' => $this->is_notification != null ? $this->is_notification : '',
             'is_vehicle_added' => $this->is_vehicle_added != null ? $this->is_vehicle_added : '0',
             'is_bank_detail_added' => $this->is_bank_detail_added != null ? $this->is_bank_detail_added : '0',
+            'referral_code_text' => $this->referral_code_text != null ? $this->referral_code_text : '',
         ];
         
     }
