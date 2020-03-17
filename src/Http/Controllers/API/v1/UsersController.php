@@ -268,7 +268,8 @@ class UsersController extends Controller {
                         'message' => "Invalid Invitation Code"
                     ],422);
                 }
-            
+                
+            $referral_code_text = Setting::select('referral_code_text')->latest()->first();
             
             $validPhone_ccode=phoneOtp::whereRaw('phone_no = ? and phone_country_code = ?',[ $request['phone_number'], $request['phone_country_code']])->first();
             if(!$validPhone_ccode)
@@ -310,7 +311,7 @@ class UsersController extends Controller {
             // now fetch the user id of the user whose referral code is used in registration
             if($registerThroughReferral != null or $registerThroughReferral != ""){
                 if($userReferr != null){
-                    $values = array('user_id_one' => $userReferr->id,'user_id_two' =>  $user->id, 'code' => $request['referral_code']);
+                    $values = array('user_id_one' => $userReferr->id,'user_id_two' =>  $user->id, 'code' => $registerThroughReferral);
                     $insertReferralRecord = DB::table('referral_record')
                                                 ->insert($values);
                 }
@@ -320,7 +321,7 @@ class UsersController extends Controller {
             
             $sug_price_value = Setting::select('sug_price_value')->latest()->first();
 
-            return (new UserResource($user, $token,"","",$sug_price_value->sug_price_value))->additional([
+            return (new UserResource($user, $token,"","",$sug_price_value->sug_price_value,$referral_code_text))->additional([
                         'status' => 1,
                         'message' => trans('Registered Successfully')
             ]);
@@ -431,6 +432,7 @@ class UsersController extends Controller {
             // $sug_price_value->sug_price_value will fetch price value from settings table so, that
             // when ever admin changes base price value for suggested price per km then it can be used to fetch data
             $sug_price_value = Setting::select('sug_price_value')->latest()->first();
+            $referral_code_text = Setting::select('referral_code_text')->latest()->first();
             $isValidatePhone = User::where('phone_number',$request['email'])->first(); 
             
             $email = ($isValidatePhone) ? $isValidatePhone->email : $request['email'];
@@ -465,7 +467,7 @@ class UsersController extends Controller {
                                         ->get()
                                         ->count();
                 if($is_bank_detail_added>0) {$is_bank_detail_added=1;} else {$is_bank_detail_added=0;}
-                return (new UserResource($user, $token,$is_vehicle_added,$is_bank_detail_added, $sug_price_value->sug_price_value))->additional([
+                return (new UserResource($user, $token,$is_vehicle_added,$is_bank_detail_added, $sug_price_value->sug_price_value,$referral_code_text->referral_code_text))->additional([
                             'status' => 1,
                             'message' => trans('User Logged In Successfully')
                 ]);
@@ -995,7 +997,7 @@ class UsersController extends Controller {
             }
             
             $user->save();
-            return (new UserResource($user,"","","",""))->additional([
+            return (new UserResource($user,"","","","","",""))->additional([
                         'status' => 1,
                         'message' => trans('User Details updated successfully')
             ]);
@@ -1369,7 +1371,7 @@ class UsersController extends Controller {
             $phone_country_code = Input::get('phone_country_code');
             $phone_number = Input::get('phone_number');
             $image_social = Input::get('social_image');
-
+            $referral_code_text = Setting::select('referral_code_text')->latest()->first();
             //Login and Register by facebook id
             if($type == 'facebook'){
                 $user = User::where('fb_id',$id)->first();
@@ -1378,7 +1380,7 @@ class UsersController extends Controller {
                     $user->social_image = $image_social;
                     $user->update();
                     $this->insertDeviceDetails($token, $user->id); 
-                    return (new UserResource($user, $token,"","",""))->additional([
+                    return (new UserResource($user, $token,"","","",$referral_code_text))->additional([
                         'status' => 1,
                         'message' => trans('Logged In Successfully')
                     ]); 
@@ -1391,7 +1393,7 @@ class UsersController extends Controller {
                         $user->update();
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token,"","",""))->additional([
+                        return (new UserResource($user, $token,"","","",$referral_code_text))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1409,7 +1411,7 @@ class UsersController extends Controller {
 
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token,"","",""))->additional([
+                        return (new UserResource($user, $token,"","","",$referral_code_text))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1457,7 +1459,7 @@ class UsersController extends Controller {
 
                         $token = $user->createToken('Api access token')->accessToken;
                         $this->insertDeviceDetails($token, $user->id); 
-                        return (new UserResource($user, $token,"","",""))->additional([
+                        return (new UserResource($user, $token,"","","",$referral_code_text))->additional([
                             'status' => 1,
                             'message' => trans('Logged In Successfully')
                         ]); 
@@ -1603,7 +1605,7 @@ class UsersController extends Controller {
                 $user->update(['email' => $token->email]);
                 $token->delete();
                 $message = "Account activated successfully";
-                return (new UserResource($user,"","","",""))->additional([
+                return (new UserResource($user,"","","","",""))->additional([
                             'status' => 1,
                             'message' => $message
                 ]);
@@ -1679,7 +1681,7 @@ class UsersController extends Controller {
             $user = User::find($user->id_user);
             $token = $user->createToken('Api access token')->accessToken;
             $this->insertDeviceDetails($token, $request['id']);
-            return (new UserResource($user, $token,"","",""))->additional([
+            return (new UserResource($user, $token,"","","",""))->additional([
                         'status' => 1,
                         'message' => trans('OTP Matched Successfully')
             ]);
@@ -1718,7 +1720,7 @@ class UsersController extends Controller {
                 Activation::create(['id_user' => $user->id, 'token' => $user['token'], 'email' => $request['email']]);
             }
             Mail::to($request['email'])->send(new UpdateEmail($user));
-            return (new UserResource($user,"","","",""))->additional([
+            return (new UserResource($user,"","","","",""))->additional([
                         'status' => 1,
                         'message' => trans('OTP sent to the E-Mail')
             ]);
