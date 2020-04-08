@@ -3,6 +3,8 @@
 namespace Devrahul\Signinupapi\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Devrahul\Signinupapi\Models\UserAddresses;
+use Auth;
 
 class UserProfile extends JsonResource
 {
@@ -12,12 +14,15 @@ class UserProfile extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
+    protected $address=array();
+
     public function __construct($resource,$is_vehicle_added,$is_bank_detail_added,$sug_price_value,$referral_code_text) {
         parent::__construct($resource);
         $this->sug_price_value = $sug_price_value;
         $this->is_vehicle_added = $is_vehicle_added;
         $this->is_bank_detail_added = $is_bank_detail_added;
         $this->referral_code_text = $referral_code_text;
+        $this->address = UserAddresses::where('user_id',Auth::user()->id)->get();
     }
 
 
@@ -40,6 +45,7 @@ class UserProfile extends JsonResource
             'is_vehicle_added' => $this->is_vehicle_added,
             'is_bank_detail_added' => $this->is_bank_detail_added ,
             'referral_code_text' => $this->referral_code_text != null ? $this->referral_code_text : '',
+            'address' => $this->address != null ? $this->address : '',
         ];
     }
 }
