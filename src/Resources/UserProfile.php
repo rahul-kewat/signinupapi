@@ -22,7 +22,7 @@ class UserProfile extends JsonResource
         $this->is_vehicle_added = $is_vehicle_added;
         $this->is_bank_detail_added = $is_bank_detail_added;
         $this->referral_code_text = $referral_code_text;
-        $this->address = UserAddresses::where('user_id',Auth::user()->id)->get();
+        $this->address = UserAddresses::where('user_id',Auth::user()->id)->select("id","user_id","latitude","longitude","address_type","name","phone","country","city","pincode","full_address","house_no","landmark")->get();
     }
 
 
