@@ -24,13 +24,15 @@ class User extends Resource {
     protected $address=array();
    
 
-    public function __construct($resource,$is_vehicle_added,$is_bank_detail_added,$sug_price_value,$referral_code_text) {
+    public function __construct($resource,$token,$is_vehicle_added,$is_bank_detail_added,$sug_price_value,$referral_code_text) {
         parent::__construct($resource);
+        $this->token = $token;
         $this->sug_price_value = $sug_price_value;
         $this->is_vehicle_added = $is_vehicle_added;
         $this->is_bank_detail_added = $is_bank_detail_added;
         $this->referral_code_text = $referral_code_text;
         $this->address = UserAddresses::where('user_id',Auth::user()->id)->get();
+       
     }
 
 
@@ -50,6 +52,7 @@ class User extends Resource {
             'is_notification' => $this->is_notification != null ? $this->is_notification:'',
             'image' => $this->image ? $this->image : '',
             'bio' => $this->bio ? $this->bio : '',
+            'token' => $this->token ? $this->token : '',
             'is_vehicle_added' => $this->is_vehicle_added,
             'is_bank_detail_added' => $this->is_bank_detail_added ,
             'referral_code_text' => $this->referral_code_text != null ? $this->referral_code_text : '',
