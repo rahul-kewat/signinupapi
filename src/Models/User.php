@@ -161,61 +161,19 @@ class User extends Authenticatable implements HasRoleAndPermissionContract{
         return $query->whereOnline('1');
     }
     
-    public function chat() {
-        return $this->hasMany('App\Chat', 'id', 'user_id');
-    }
-    
-    /**
-     * Function to get user bookings
-     */
-    public function booking() {
-        return $this->hasMany('App\Booking');
-    }
-    
-    /**
-     * Function to get vender bookings
-     */
-    public function venderBooking() {   
-        return $this->hasMany('App\Booking','vender_id','id');
-    }
-
-    
-
     public function transaction() {
         return $this->hasMany('App\Transaction');
     }
-    public function venderServices() {
-        return $this->hasMany('App\VenderService', 'vender_id', 'id');
-    }
   
-    
-    public function venderSlots() {
-        return $this->belongsToMany('App\slot', 'vender_slots', 'vender_id', 'slot_id');
-    }
 
-    public function userAddress(){
-        return $this->hasOne('App\UserAddresses', 'user_id', 'id');
-    }
+    // public function userAddress(){
+    //     return $this->hasOne('App\UserAddresses', 'user_id', 'id');
+    // }
 
-    public function userManyAddress(){
-        return $this->hasMany('App\UserAddresses', 'user_id', 'id');
-    }
+    // public function userManyAddress(){
+    //     return $this->hasMany('App\UserAddresses', 'user_id', 'id');
+    // }
 
-    /*** Need to remove one from below relation */
-    public function vendorEducations(){
-        return $this->hasMany('App\vendorEducation', 'user_id', 'id');
-    }
-
-
-    public function vendorEducation(){
-        return $this->hasMany('App\vendorEducation', 'user_id', 'id');
-    }
-    /*** Need to remove one relation from above  */
-    
-    public function selectedAddress()
-    {
-        return $this->hasOne('App\UserAddresses', 'id', 'selected_address');
-    }
 
     public function userPhoneOtp()
     {
@@ -227,29 +185,12 @@ class User extends Authenticatable implements HasRoleAndPermissionContract{
         return $this->hasOne('App\RoleUser', 'user_id', 'id');
     }
 
-    public function venderSlot(){
-        return $this->hasMany('App\venderSlot','vender_id');
-    }
-
+  
     public function roles()
     {
         return $this->belongsToMany('App\Role');
     }
     
-    /**
-     * Function to reterive vender reviews
-     */
-    public function vendorReviews() {
-        return $this->hasMany('App\Review', 'vender_id', 'id');
-    }
-
-    /**
-     * Function to reterive vender reviews
-     */
-    public function vendorReviewsAvg() {
-        return $this->hasMany('App\Review', 'vender_id', 'id');
-    }
-
     
     public function hasNotifications()
     {
@@ -267,7 +208,16 @@ class User extends Authenticatable implements HasRoleAndPermissionContract{
     public function userIsVehicle(){
         return $this->hasMany('App\Models\Vehicle','user_id','id');
     }
-    // public function userIsBankDetail(){
-    //     return $this->hasMany('\App\Models\Vehicle','user_id','id');
-    // }
+
+
+    public function homeAddress(){
+        return $this->hasOne('App\UserAddresses', 'user_id', 'id')->where('address_type',1);
+    }
+    public function workAddress(){
+        return $this->hasOne('App\UserAddresses', 'user_id', 'id')->where('address_type',2);
+    }
+    public function otherAddress(){
+        return $this->hasOne('App\UserAddresses', 'user_id', 'id')->where('address_type',3);
+    }
+    
 }
