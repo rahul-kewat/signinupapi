@@ -89,7 +89,10 @@ class UserProfile extends JsonResource
 
         $user = RideAccepted::where(['ride_accepted.user_id'=> Auth::user()->id , 'ride_accepted.status' => 0, 'is_accepted_by_driver' => 1 ])->join('ride','ride.id','ride_id')->orderBy('ride_accepted.updated_at')->select('ride_accepted.ride_id','ride_accepted.user_id','ride_accepted.status','ride_accepted.is_accepted_by_driver','ride_accepted.updated_at','ride.id','ride.user_id','ride.status as rideStatus','ride.max_no_seats')->first();
 
-        $this->is_pending_payment = $this->getPaymentDetail($user);
+        if($user->ride_id != null)
+            $this->is_pending_payment = $this->getPaymentDetail($user);
+        else
+            $this->is_pending_payment = "";
     }
 
 
