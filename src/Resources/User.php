@@ -100,7 +100,7 @@ class User extends Resource {
         $this->referral_code_text = $referral_code_text;
         $this->address = UserAddresses::where('user_id',Auth::user()->id)->select("id","user_id","latitude","longitude","address_type","name","phone","country","city","pincode","full_address","house_no","landmark")->get();
         $user = RideAccepted::where(['ride_accepted.user_id'=> Auth::user()->id , 'ride_accepted.status' => 0, 'is_accepted_by_driver' => 1 ])->join('ride','ride.id','ride_id')->orderBy('ride_accepted.updated_at')->select('ride_accepted.ride_id','ride_accepted.user_id','ride_accepted.status','ride_accepted.is_accepted_by_driver','ride_accepted.updated_at','ride.id','ride.user_id','ride.status as rideStatus','ride.max_no_seats')->first();
-        if($user->ride_id != null)
+        if($user != null)
             $this->is_pending_payment = $this->getPaymentDetail($user);
         else
         $this->is_pending_payment = "";
