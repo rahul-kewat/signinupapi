@@ -5,6 +5,11 @@ namespace Devrahul\Signinupapi\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Devrahul\Signinupapi\Models\UserAddresses;
 use Auth;
+use App\Models\RideAccepted;
+use App\Models\Rides;
+use DB;
+use App\Models\Transaction;
+use App\Setting;
 
 class UserProfile extends JsonResource
 {
