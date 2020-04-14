@@ -98,7 +98,7 @@ class User extends Resource {
         $this->is_vehicle_added = $is_vehicle_added;
         $this->is_bank_detail_added = $is_bank_detail_added;
         $this->referral_code_text = $referral_code_text;
-        $this->address = UserAddresses::where('user_id',Auth::user()->id)->select("id","user_id","latitude","longitude","place_id","country","city","pincode","full_address","house_no","landmark")->get();
+        $this->address = UserAddresses::where('user_id',Auth::user()->id)->select("id","user_id","latitude","longitude","place_id","address_type","country","city","pincode","full_address","house_no","landmark")->get();
         $user = RideAccepted::where(['ride_accepted.user_id'=> Auth::user()->id , 'ride_accepted.status' => 0, 'is_accepted_by_driver' => 1,'ride.status' =>0 ])->join('ride','ride.id','ride_id')->orderBy('ride_accepted.updated_at')->select('ride_accepted.ride_id','ride_accepted.user_id','ride_accepted.status','ride_accepted.is_accepted_by_driver','ride_accepted.updated_at','ride.id','ride.user_id','ride.status as rideStatus','ride.max_no_seats')->first();
 
         
