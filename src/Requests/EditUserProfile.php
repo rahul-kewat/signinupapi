@@ -34,7 +34,7 @@ class EditUserProfile extends FormRequest
             'phone_number' => $phoneNoRules,
             'gender' => 'required|integer|between:0,2',
             'otp' => 'sometimes|required|string|exists:phone_otps,otp',
-            'date_of_birth' => 'required|date_format:Y-m-d',
+            'date_of_birth' => 'sometimes|date_format:Y-m-d',
             'bio' => ''
             
         ];
