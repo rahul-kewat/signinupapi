@@ -30,6 +30,11 @@ class ForgetPasswordReq extends FormRequest
             'phone_country_code' => 'required'
         ];
     }
+    public function messages(){
+        return [
+            'phone_no.exists' => 'The entered phone number is not registered with us!'
+        ];
+    }
     
     /**
      * Overwrite Validation error response
