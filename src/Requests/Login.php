@@ -27,7 +27,7 @@ class Login extends FormRequest
     {
         
         $rules = [];
-        $rules['phone_number'] = 'required_without:email|integer';
+        $rules['phone_number'] = 'required_without:email|string';
         $rules['phone_country_code'] = 'required_with:phone_number';
         $rules['email'] = filter_var($this->email, FILTER_VALIDATE_EMAIL) ? 'required_without:phone_number|string|email|exists:users,email' :  ['required_without:phone_number','string','exists:users,phone_number'];
         $rules['password'] = 'required|string';
