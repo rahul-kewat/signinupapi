@@ -26,7 +26,7 @@ class ForgetPasswordReq extends FormRequest
     public function rules()
     {
         return [
-            'phone_no' => ['required','integer','exists:users,phone_number'],
+            'phone_no' => ['required','string','exists:users,phone_number'],
             'phone_country_code' => 'required'
         ];
     }
