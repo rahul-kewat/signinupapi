@@ -25,7 +25,7 @@ class SendOtp extends FormRequest
      */
     public function rules()
     {
-         $phoneNoRules = $this->has('email') ? ['required','integer','unique:users,phone_number'] :( $this->has('update_profile') ?  ['required','integer','unique:users,phone_number'] : ['required','integer','unique:users,phone_number']);
+         $phoneNoRules = $this->has('email') ? ['required','string','unique:users,phone_number'] :( $this->has('update_profile') ?  ['required','string','unique:users,phone_number'] : ['required','string','unique:users,phone_number']);
         
 
         return [
