@@ -30,7 +30,7 @@ class SocialRequest extends FormRequest
             'social_id'    => 'required|string',
             'firstname'    => 'sometimes|required|string',
             'phone_country_code'    => 'sometimes|required|integer',
-            'phone_number'    => 'sometimes|required|integer|digits:10',
+            'phone_number'    => 'sometimes|required|string',
             'social_image'    => 'sometimes|required|string'
         ];
     }
