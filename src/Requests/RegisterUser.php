@@ -32,7 +32,7 @@ class RegisterUser extends FormRequest
             'password' => 'required|min:6',
             'phone_country_code' => 'required',
             'refferal_code' => 'string|max:6|nullable',
-            'phone_number' => ['required','integer','unique:users','exists:phone_otps,phone_no'],
+            'phone_number' => ['required','string','unique:users','exists:phone_otps,phone_no'],
             'phone_country_code' => 'required',
             'otp' => 'required|integer|exists:phone_otps,otp'
         ];
