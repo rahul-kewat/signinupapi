@@ -26,7 +26,7 @@ class SocialRequest extends FormRequest
     {
         return [
             'email' => 'required|string|email',
-            'type'  => 'required|string|in:facebook,google',
+            'type'  => 'required|string|in:facebook,google,apple',
             'social_id'    => 'required|string',
             'firstname'    => 'sometimes|required|string',
             'phone_country_code'    => 'sometimes|required|integer',
